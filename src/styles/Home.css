@@ -1,0 +1,14 @@
+.home {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    padding-bottom: 8rem;
+}
+
+.home-logo {
+    font-size: 6rem;
+    margin: 1rem 0rem;
+}
