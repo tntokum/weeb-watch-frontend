@@ -23,41 +23,50 @@ function Home() {
     timeout: 10000,
   });
 
-  const [funiList, setFuniList] = useState({});
-  const [crunchyList, setCrunchyList] = useState({});
   const [crunchySessionID, setCrunchySessionID] = useState('');
   
+  // get crunchyroll session ID once per page refresh
   useEffect(() => {
     crunchyroll
       .get('start_session.0.json', {params: {access_token: "WveH9VkPLrXvuNm", device_type: "com.crunchyroll.crunchyroid", device_id: uuid.v4()}})
       .then((r) => setCrunchySessionID(r.data.data.session_id));
   }, []);
-
-  const funiHandleResponse = (response) => {
-    setFuniList(response.data);
-  }
   
   // autocomplete state
   const [value, setValue] = useState('');
+  const [crunchyOptions, setCrunchyOptions] = useState([]);
+  const [funiOptions, setFuniOptions] = useState([]);
   const [options, setOptions] = useState([]);
 
   const onSearch = (searchText) => {
+    // console.log('onSearch', searchText);
     setValue(searchText);
   };
 
+  // query crunchyroll/funimation when search value changes
   useEffect(() => {
     const waitFinishedTyping = setTimeout(() => {
       console.log(value);
+
       let filter = `prefix:${value.trim()}`;
+      let funiParams = {unique: true, limit: 3, q: value, offset: 0 };
+      
+      funimation
+        .get('source/funimation/search/auto', {params: funiParams})
+        .then((response) => {
+          setFuniOptions(
+            value ? (response.data.items ? response.data.items.hits.map((value) => {
+              return {value: `[F] ${value.title}`};
+            }) : []) : []
+          );
+        });
+
       crunchyroll
         .get('list_series.0.json', {params: {media_type: 'anime', session_id: crunchySessionID, filter}})
         .then((response) => {
-          setOptions(
-            //   // searchText ? (funiList['items'] ? funiList['items']['hits'].map((value) => {
-            //   //   return {value: value['title']};
-            //   // }) : []) : []
+          setCrunchyOptions(
             value ? (response.data.data ? response.data.data.map((value) => {
-              return {value: value.name};
+              return {value: `[C] ${value.name}`};
             }) : []) : []
           );
         });
@@ -66,13 +75,23 @@ function Home() {
     return () => clearTimeout(waitFinishedTyping);
   }, [value]);
 
+  // update options list when crunchyOptions or funiOptions changes
+  useEffect(() => {
+    // console.log('crunchyOptions', crunchyOptions);
+    // console.log('funiOptions', funiOptions);
+    const combined = crunchyOptions.concat(funiOptions);
+    setOptions(
+      combined
+    );
+  }, [crunchyOptions, funiOptions]);
+
   const onSelect = (data) => {
     console.log('onSelect', data);
   };
 
-  const onChange = (data) => {
-    // setValue(data);
-  };
+  // const onChange = (data) => {
+  //   console.log('onChange', data);
+  // };
 
   return (
     <div className="home">
@@ -86,7 +105,6 @@ function Home() {
           style={{width: 400}}
           onSelect={onSelect}
           onSearch={onSearch}
-          onChange={onChange}
           placeholder="Search for shows">
         </AutoComplete>
         <Tooltip title="Search">
