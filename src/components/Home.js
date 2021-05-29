@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AutoComplete, Button, Tooltip } from "antd";
 import { SearchOutlined } from '@ant-design/icons';
-import { queryFunimation, queryCrunchyroll } from './query-utils'
+import { Link } from 'react-router-dom';
+
 import axios from 'axios';
 import * as uuid from 'uuid';
+
+import Show from '../components/Show';
 import '../styles/Home.css'
 
 const { Option } = AutoComplete;
@@ -33,30 +36,28 @@ function Home() {
   }, []);
   
   // autocomplete state
-  const [value, setValue] = useState('');
+  const [searchText, setSearchText] = useState('');
   const [crunchyOptions, setCrunchyOptions] = useState([]);
   const [funiOptions, setFuniOptions] = useState([]);
-  const [options, setOptions] = useState([]);
+  const [shows, setShows] = useState([]);
 
-  const onSearch = (searchText) => {
+  const onSearch = (search) => {
     // console.log('onSearch', searchText);
-    setValue(searchText);
+    setSearchText(search);
   };
 
   // query crunchyroll/funimation when search value changes
   useEffect(() => {
     const waitFinishedTyping = setTimeout(() => {
-      console.log(value);
-
-      let filter = `prefix:${value.trim()}`;
-      let funiParams = {unique: true, limit: 3, q: value, offset: 0 };
+      let filter = `prefix:${searchText.trim()}`;
+      let funiParams = {unique: true, limit: 3, q: searchText, offset: 0 };
       
       funimation
         .get('source/funimation/search/auto', {params: funiParams})
         .then((response) => {
           setFuniOptions(
-            value ? (response.data.items ? response.data.items.hits.map((value) => {
-              return {value: `[F] ${value.title}`};
+            searchText ? (response.data.items ? response.data.items.hits.map((value) => {
+              return {title: `[F] ${value.title}`, meta: value};
             }) : []) : []
           );
         });
@@ -65,22 +66,23 @@ function Home() {
         .get('list_series.0.json', {params: {media_type: 'anime', session_id: crunchySessionID, filter}})
         .then((response) => {
           setCrunchyOptions(
-            value ? (response.data.data ? response.data.data.map((value) => {
-              return {value: `[C] ${value.name}`};
+            searchText ? (response.data.data ? response.data.data.map((value) => {
+              return {title: `[C] ${value.name}`, meta: value};
             }) : []) : []
           );
         });
     }, 250);
 
     return () => clearTimeout(waitFinishedTyping);
-  }, [value]);
+  }, [searchText]);
 
   // update options list when crunchyOptions or funiOptions changes
   useEffect(() => {
     // console.log('crunchyOptions', crunchyOptions);
     // console.log('funiOptions', funiOptions);
     const combined = crunchyOptions.concat(funiOptions);
-    setOptions(
+    console.log(combined);
+    setShows(
       combined
     );
   }, [crunchyOptions, funiOptions]);
@@ -96,16 +98,20 @@ function Home() {
   return (
     <div className="home">
       <div className="home-logo">
-        WeWatch
+        WeebWatch
       </div>
       <div className="home-search">
         <AutoComplete
-          value={value}
-          options={options}
+          value={searchText}
           style={{width: 400}}
           onSelect={onSelect}
           onSearch={onSearch}
           placeholder="Search for shows">
+          {shows.map((value) => (
+            <Option key={value.title} value={value.title}>
+              <Link to='/show'>{value.title}</Link>
+            </Option>
+          ))}
         </AutoComplete>
         <Tooltip title="Search">
           <Button type="primary" icon={<SearchOutlined />} />
