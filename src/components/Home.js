@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AutoComplete, Button, Tooltip } from "antd";
 import { SearchOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import * as uuid from 'uuid';
 
-import Show from '../components/Show';
 import '../styles/Home.css'
 
 const { Option } = AutoComplete;
@@ -16,23 +15,17 @@ function Home() {
   const funiApiHost = 'https://prod-api-funimationnow.dadcdigital.com/api/';
   const crunchyApiHost = 'https://api.crunchyroll.com/';
 
-  const funimation = axios.create({
-    baseURL: funiApiHost,
-    timeout: 10000,
-  });
-
-  const crunchyroll = axios.create({
-    baseURL: crunchyApiHost,
-    timeout: 10000,
-  });
-
   const [crunchySessionID, setCrunchySessionID] = useState('');
   
   // get crunchyroll session ID once per page refresh
   useEffect(() => {
-    crunchyroll
-      .get('start_session.0.json', {params: {access_token: "WveH9VkPLrXvuNm", device_type: "com.crunchyroll.crunchyroid", device_id: uuid.v4()}})
-      .then((r) => setCrunchySessionID(r.data.data.session_id));
+    const fetchCrunchyID = async () => {
+      await axios
+        .get(`${crunchyApiHost}start_session.0.json`, {params: {access_token: "WveH9VkPLrXvuNm", device_type: "com.crunchyroll.crunchyroid", device_id: uuid.v4()}})
+        .then((r) => setCrunchySessionID(r.data.data.session_id));
+    };
+    
+    fetchCrunchyID();
   }, []);
   
   // autocomplete state
@@ -52,8 +45,8 @@ function Home() {
       let filter = `prefix:${searchText.trim()}`;
       let funiParams = {unique: true, limit: 3, q: searchText, offset: 0 };
       
-      funimation
-        .get('source/funimation/search/auto', {params: funiParams})
+      axios
+        .get(`${funiApiHost}source/funimation/search/auto`, {params: funiParams})
         .then((response) => {
           setFuniOptions(
             searchText ? (response.data.items ? response.data.items.hits.map((value) => {
@@ -62,8 +55,8 @@ function Home() {
           );
         });
 
-      crunchyroll
-        .get('list_series.0.json', {params: {media_type: 'anime', session_id: crunchySessionID, filter}})
+      axios
+        .get(`${crunchyApiHost}list_series.0.json`, {params: {media_type: 'anime', session_id: crunchySessionID, filter}})
         .then((response) => {
           setCrunchyOptions(
             searchText ? (response.data.data ? response.data.data.map((value) => {
@@ -74,12 +67,10 @@ function Home() {
     }, 250);
 
     return () => clearTimeout(waitFinishedTyping);
-  }, [searchText]);
+  }, [searchText, crunchySessionID]);
 
   // update options list when crunchyOptions or funiOptions changes
   useEffect(() => {
-    // console.log('crunchyOptions', crunchyOptions);
-    // console.log('funiOptions', funiOptions);
     const combined = crunchyOptions.concat(funiOptions);
     console.log(combined);
     setShows(
@@ -90,10 +81,6 @@ function Home() {
   const onSelect = (data) => {
     console.log('onSelect', data.replace(/[^A-Za-z\s]/gi, '').replace(/\s/gi, '-').toLowerCase());
   };
-
-  // const onChange = (data) => {
-  //   console.log('onChange', data);
-  // };
 
   return (
     <div className="home">
