@@ -16,7 +16,8 @@ function Home() {
   const crunchyApiHost = 'https://api.crunchyroll.com/';
 
   const [crunchySessionID, setCrunchySessionID] = useState('');
-  
+
+  // TODO: move API call into App.js
   // get crunchyroll session ID once per page refresh
   useEffect(() => {
     const fetchCrunchyID = async () => {
@@ -39,6 +40,7 @@ function Home() {
     setSearchText(search);
   };
 
+  // TODO: move API call into App.js
   // query crunchyroll/funimation when search value changes
   useEffect(() => {
     const waitFinishedTyping = setTimeout(() => {
@@ -91,12 +93,20 @@ function Home() {
         <AutoComplete
           value={searchText}
           style={{width: 400}}
+          autoFocus={true}
           onSelect={onSelect}
           onSearch={onSearch}
           placeholder="Search for shows">
-          {shows.map((value) => (
-            <Option key={`${value.provider} ${value.title}`} value={value.title}>
-              <Link to={`/show/${value.provider.toLowerCase()}/${value.title.replace(/[^A-Za-z0-9\s]/gi, '').replace(/\s/gi, '-').toLowerCase()}`}>{value.title}</Link>
+          {shows.map((show) => (
+            <Option key={`${show.provider} ${show.title}`} value={show.title}>
+              <Link 
+                to={{
+                  pathname: `/show/${show.provider.toLowerCase()}/${show.title.replace(/[^A-Za-z0-9\s]/gi, '').replace(/\s/gi, '-').toLowerCase()}`,
+                  state: {
+                    show: show
+                  }}}>
+                {show.title}
+              </Link>
             </Option>
           ))}
         </AutoComplete>
