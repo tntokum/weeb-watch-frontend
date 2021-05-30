@@ -57,7 +57,7 @@ function Home() {
         .then((response) => {
           setFuniOptions(
             searchText ? (response.data.items ? response.data.items.hits.map((value) => {
-              return {title: `[F] ${value.title}`, meta: value};
+              return {title: value.title, provider: 'Funimation', meta: value};
             }) : []) : []
           );
         });
@@ -67,7 +67,7 @@ function Home() {
         .then((response) => {
           setCrunchyOptions(
             searchText ? (response.data.data ? response.data.data.map((value) => {
-              return {title: `[C] ${value.name}`, meta: value};
+              return {title: value.name, provider: 'Crunchyroll', meta: value};
             }) : []) : []
           );
         });
@@ -88,7 +88,7 @@ function Home() {
   }, [crunchyOptions, funiOptions]);
 
   const onSelect = (data) => {
-    console.log('onSelect', data);
+    console.log('onSelect', data.replace(/[^A-Za-z\s]/gi, '').replace(/\s/gi, '-').toLowerCase());
   };
 
   // const onChange = (data) => {
@@ -108,8 +108,8 @@ function Home() {
           onSearch={onSearch}
           placeholder="Search for shows">
           {shows.map((value) => (
-            <Option key={value.title} value={value.title}>
-              <Link to='/show'>{value.title}</Link>
+            <Option key={`${value.provider} ${value.title}`} value={value.title}>
+              <Link to={`/show/${value.provider.toLowerCase()}/${value.title.replace(/[^A-Za-z0-9\s]/gi, '').replace(/\s/gi, '-').toLowerCase()}`}>{value.title}</Link>
             </Option>
           ))}
         </AutoComplete>
