@@ -7,6 +7,7 @@ import axios from 'axios';
 import * as uuid from 'uuid';
 
 import '../styles/Home.css'
+import Layout, { Content, Footer, Header } from 'antd/lib/layout/layout';
 
 const { Option } = AutoComplete;
 
@@ -85,36 +86,44 @@ function Home() {
   };
 
   return (
-    <div className="home">
-      <div className="home-logo">
+    <Layout>
+      <Header>
         WeebWatch
-      </div>
-      <div className="home-search">
-        <AutoComplete
-          value={searchText}
-          style={{width: 400}}
-          autoFocus={true}
-          onSelect={onSelect}
-          onSearch={onSearch}
-          placeholder="Search for shows">
-          {shows.map((show) => (
-            <Option key={`${show.provider} ${show.title}`} value={show.title}>
-              <Link 
-                to={{
-                  pathname: `/show/${show.provider.toLowerCase()}/${show.title.replace(/[^A-Za-z0-9\s]/gi, '').replace(/\s/gi, '-').toLowerCase()}`,
-                  state: {
-                    show: show
-                  }}}>
-                {show.title}
-              </Link>
-            </Option>
-          ))}
-        </AutoComplete>
-        <Tooltip title="Search">
-          <Button type="primary" icon={<SearchOutlined />} />
-        </Tooltip>
-      </div>
-    </div>
+      </Header>
+      <Content>
+        <div className="home-logo">
+          WeebWatch
+        </div>
+        <div className="home-search">
+          <AutoComplete
+            value={searchText}
+            style={{width: 400}}
+            autoFocus={true}
+            onSelect={onSelect}
+            onSearch={onSearch}
+            placeholder="Search for shows">
+            {shows.map((show) => (
+              <Option key={`${show.provider} ${show.title}`} value={show.title}>
+                <Link 
+                  to={{
+                    pathname: `/show/${show.provider.toLowerCase()}/${show.title.replace(/[^A-Za-z0-9\s]/gi, '').replace(/\s/gi, '-').toLowerCase()}`,
+                    state: {
+                      show: show
+                    }}}>
+                  {show.title}
+                </Link>
+              </Option>
+            ))}
+          </AutoComplete>
+          <Tooltip title="Search">
+            <Button type="primary" icon={<SearchOutlined />} />
+          </Tooltip>
+        </div>
+      </Content>
+      <Footer>
+        test
+      </Footer>
+    </Layout>
   );
 }
 
