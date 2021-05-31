@@ -18,13 +18,13 @@
 }
 
 .ant-layout-content {
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: center;
- flex-grow: 1;
+  padding: 3rem;
 }
 
-.ant-layout-header, .ant-layout-content, .ant-layout-footer {
+.spacer {
+  flex-grow: 1;
+}
+
+.ant-layout-header, .ant-layout-content, .ant-layout-footer, .spacer {
   flex-shrink: 0;
 }

@@ -1,5 +1,12 @@
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    padding: 6rem;
+}
+
 .home-logo {
     font-size: 7rem;
     margin: 1rem;
 }
-

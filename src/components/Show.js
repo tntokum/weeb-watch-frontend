@@ -34,13 +34,19 @@ function Show(props) {
       </div>
     );
   }
-  
+
   return (
-    <div className="portrait-image">
-      <Image 
-        width={400}
-        src={showMeta.show.meta.portrait_image.full_url} />
-    </div>
+    <>
+      <div className="portrait-meta">
+        <Image 
+          width={350}
+          src={showMeta.show.meta.portrait_image.full_url} />
+      </div>
+      <div className="episode-list">
+        test
+      </div>
+    </>
+    
   );
 }
 

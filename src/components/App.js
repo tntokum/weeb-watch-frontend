@@ -1,6 +1,6 @@
 import React from 'react';
 import '../styles/App.css';
-import { Switch, Route } from 'react-router-dom';
+import { Link, Switch, Route } from 'react-router-dom';
 import Home from '../components/Home';
 import Show from '../components/Show';
 import Play from '../components/Play';
@@ -10,7 +10,7 @@ function App() {
   return (
     <Layout>
       <Header>
-        WeebWatch
+        <Link to="/">WeebWatch</Link>
       </Header>
       <Content>
         <Switch>
@@ -19,6 +19,7 @@ function App() {
           <Route exact path="/play" component={Play} />
         </Switch>
       </Content>
+      <div className="spacer" />
       <Footer>
         test
       </Footer>

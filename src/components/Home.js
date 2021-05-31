@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AutoComplete, Button, Tooltip } from "antd";
 import { SearchOutlined } from '@ant-design/icons';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 
 import axios from 'axios';
 import * as uuid from 'uuid';
@@ -101,7 +101,7 @@ function Home() {
     // return <div/>
   } else {
     return (
-      <>
+      <div className="home">
         <div className="home-logo">
           WeebWatch
         </div>
@@ -123,7 +123,7 @@ function Home() {
             <Button type="primary" icon={<SearchOutlined />} />
           </Tooltip> */}
         </div>
-      </>
+      </div>
     );
   }
   

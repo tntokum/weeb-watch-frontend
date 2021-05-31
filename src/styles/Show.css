@@ -1,3 +1,11 @@
-.portrait-image {
-    padding: 2rem;
+.portrait-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.show {
+    display: flex;
+    /* align-items: center;
+    justify-content: center; */
+    /* flex-shrink: 0; */
 }
