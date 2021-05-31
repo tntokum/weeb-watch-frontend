@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { AutoComplete, Button, Tooltip } from "antd";
 import { SearchOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 
 import axios from 'axios';
 import * as uuid from 'uuid';
 
 import '../styles/Home.css'
-import Layout, { Content, Footer, Header } from 'antd/lib/layout/layout';
 
 const { Option } = AutoComplete;
 
@@ -36,6 +35,9 @@ function Home() {
   const [funiOptions, setFuniOptions] = useState([]);
   const [shows, setShows] = useState([]);
 
+  // navigation
+  const [navigation, setNavigation] = useState({});
+
   const onSearch = (search) => {
     // console.log('onSearch', searchText);
     setSearchText(search);
@@ -53,7 +55,7 @@ function Home() {
         .then((response) => {
           setFuniOptions(
             searchText ? (response.data.items ? response.data.items.hits.map((value) => {
-              return {title: value.title, provider: 'Funimation', meta: value};
+              return {id: value.id, title: value.title, provider: 'Funimation', meta: value};
             }) : []) : []
           );
         });
@@ -63,7 +65,7 @@ function Home() {
         .then((response) => {
           setCrunchyOptions(
             searchText ? (response.data.data ? response.data.data.map((value) => {
-              return {title: value.name, provider: 'Crunchyroll', meta: value};
+              return {id: value.series_id, title: value.name, provider: 'Crunchyroll', meta: value};
             }) : []) : []
           );
         });
@@ -75,22 +77,31 @@ function Home() {
   // update options list when crunchyOptions or funiOptions changes
   useEffect(() => {
     const combined = crunchyOptions.concat(funiOptions);
-    console.log(combined);
+    // console.log(combined);
     setShows(
       combined
     );
   }, [crunchyOptions, funiOptions]);
 
-  const onSelect = (data) => {
-    console.log('onSelect', data.replace(/[^A-Za-z\s]/gi, '').replace(/\s/gi, '-').toLowerCase());
+  const onSelect = (_, option) => {
+    setNavigation(option);
   };
 
-  return (
-    <Layout>
-      <Header>
-        WeebWatch
-      </Header>
-      <Content>
+  if (!(navigation && Object.keys(navigation).length === 0 && navigation.constructor === Object)) {
+    console.log(navigation);
+    return (
+      <Redirect 
+        to={{
+          pathname: `/show/${navigation.show.provider.toLowerCase()}/${navigation.show.title.replace(/[^A-Za-z0-9\s]/gi, '').replace(/\s/gi, '-').toLowerCase()}`,
+          state: {
+            show: navigation.show
+          }}}
+      />
+    );
+    // return <div/>
+  } else {
+    return (
+      <>
         <div className="home-logo">
           WeebWatch
         </div>
@@ -103,28 +114,19 @@ function Home() {
             onSearch={onSearch}
             placeholder="Search for shows">
             {shows.map((show) => (
-              <Option key={`${show.provider} ${show.title}`} value={show.title}>
-                <Link 
-                  to={{
-                    pathname: `/show/${show.provider.toLowerCase()}/${show.title.replace(/[^A-Za-z0-9\s]/gi, '').replace(/\s/gi, '-').toLowerCase()}`,
-                    state: {
-                      show: show
-                    }}}>
-                  {show.title}
-                </Link>
+              <Option key={`${show.id}`} value={`${show.id}`} show={show}>
+                {show.title}
               </Option>
             ))}
           </AutoComplete>
-          <Tooltip title="Search">
+          {/* <Tooltip title="Search">
             <Button type="primary" icon={<SearchOutlined />} />
-          </Tooltip>
+          </Tooltip> */}
         </div>
-      </Content>
-      <Footer>
-        test
-      </Footer>
-    </Layout>
-  );
+      </>
+    );
+  }
+  
 }
 
 export default Home;

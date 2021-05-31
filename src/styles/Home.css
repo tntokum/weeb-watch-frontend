@@ -3,27 +3,3 @@
     margin: 1rem;
 }
 
-.ant-layout {
-    height: 100%;
-}
-
-.ant-layout-header {
-    color: white;
-    font-size: 18px;
-}
-
-.ant-layout-footer {
-    line-height: 1.5;
-}
-
-.ant-layout-content {
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-   justify-content: center;
-   flex-grow: 1;
-}
-
-.ant-layout-header, .ant-layout-content, .ant-layout-footer {
-    flex-shrink: 0;
-}
