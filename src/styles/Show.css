@@ -1,11 +1,18 @@
+.show {
+    display: flex;
+    /* align-items: center; */
+    justify-content: space-around;
+    /* flex-shrink: 0; */
+}
+
 .portrait-meta {
     display: flex;
     flex-direction: column;
 }
 
-.show {
-    display: flex;
-    /* align-items: center;
-    justify-content: center; */
-    /* flex-shrink: 0; */
+.show-title {
+    padding: 2.5rem;
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: bold;
 }

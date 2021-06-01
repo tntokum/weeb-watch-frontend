@@ -4,30 +4,15 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Redirect } from 'react-router-dom';
 
 import axios from 'axios';
-import * as uuid from 'uuid';
 
 import '../styles/Home.css'
 
 const { Option } = AutoComplete;
 
-function Home() {
+function Home(props) {
   // anime streaming site
   const funiApiHost = 'https://prod-api-funimationnow.dadcdigital.com/api/';
   const crunchyApiHost = 'https://api.crunchyroll.com/';
-
-  const [crunchySessionID, setCrunchySessionID] = useState('');
-
-  // TODO: move API call into App.js
-  // get crunchyroll session ID once per page refresh
-  useEffect(() => {
-    const fetchCrunchyID = async () => {
-      await axios
-        .get(`${crunchyApiHost}start_session.0.json`, {params: {access_token: "WveH9VkPLrXvuNm", device_type: "com.crunchyroll.crunchyroid", device_id: uuid.v4()}})
-        .then((r) => setCrunchySessionID(r.data.data.session_id));
-    };
-    
-    fetchCrunchyID();
-  }, []);
   
   // autocomplete state
   const [searchText, setSearchText] = useState('');
@@ -61,7 +46,7 @@ function Home() {
         });
 
       axios
-        .get(`${crunchyApiHost}list_series.0.json`, {params: {media_type: 'anime', session_id: crunchySessionID, filter}})
+        .get(`${crunchyApiHost}list_series.0.json`, {params: {media_type: 'anime', session_id: props.crunchySessionID, filter}})
         .then((response) => {
           setCrunchyOptions(
             searchText ? (response.data.data ? response.data.data.map((value) => {
@@ -72,7 +57,7 @@ function Home() {
     }, 250);
 
     return () => clearTimeout(waitFinishedTyping);
-  }, [searchText, crunchySessionID]);
+  }, [searchText, props.crunchySessionID]);
 
   // update options list when crunchyOptions or funiOptions changes
   useEffect(() => {
@@ -90,15 +75,16 @@ function Home() {
   if (!(navigation && Object.keys(navigation).length === 0 && navigation.constructor === Object)) {
     console.log(navigation);
     return (
-      <Redirect 
+      <Redirect
+        push
         to={{
           pathname: `/show/${navigation.show.provider.toLowerCase()}/${navigation.show.title.replace(/[^A-Za-z0-9\s]/gi, '').replace(/\s/gi, '-').toLowerCase()}`,
           state: {
-            show: navigation.show
+            show: navigation.show,
+            crunchySessionID: props.crunchySessionID
           }}}
       />
     );
-    // return <div/>
   } else {
     return (
       <div className="home">

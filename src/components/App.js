@@ -1,22 +1,45 @@
-import React from 'react';
-import '../styles/App.css';
+import React, { useEffect, useState } from 'react';
 import { Link, Switch, Route } from 'react-router-dom';
+import Layout, { Content, Footer, Header } from 'antd/lib/layout/layout';
+
+import axios from 'axios';
+import * as uuid from 'uuid';
+
 import Home from '../components/Home';
 import Show from '../components/Show';
 import Play from '../components/Play';
-import Layout, { Content, Footer, Header } from 'antd/lib/layout/layout';
+
+import '../styles/App.css';
 
 function App() {
+  const crunchyApiHost = 'https://api.crunchyroll.com/';
+
+  const [crunchySessionID, setCrunchySessionID] = useState('');
+
+  // get crunchyroll session ID once per page refresh
+  useEffect(() => {
+    const fetchCrunchyID = async () => {
+      await axios
+        .get(`${crunchyApiHost}start_session.0.json`, {params: {access_token: "WveH9VkPLrXvuNm", device_type: "com.crunchyroll.crunchyroid", device_id: uuid.v4()}})
+        .then((r) => setCrunchySessionID(r.data.data.session_id));
+    };
+    
+    fetchCrunchyID();
+  }, []);
+  // const queryCrunchyroll = (path) => {
+  //   // axios.get(`${crunchyApiHost}list_series.0.json`, {params: {media_type: 'anime', session_id: crunchySessionID, filter}})
+  // };
+
   return (
     <Layout>
       <Header>
-        <Link to="/">WeebWatch</Link>
+        <Link to="/">Home</Link>
       </Header>
       <Content>
         <Switch>
-          <Route exact path="/" component={Home} />
-          <Route exact path="/show/:provider/:title" component={Show} />
-          <Route exact path="/play" component={Play} />
+          <Route path="/show/:provider/:title" render={(props) => <Show {...props} crunchySessionID={crunchySessionID} />} />
+          <Route path="/play" component={Play} />
+          <Route path="/" render={(props) => <Home {...props} crunchySessionID={crunchySessionID} />} />
         </Switch>
       </Content>
       <div className="spacer" />
