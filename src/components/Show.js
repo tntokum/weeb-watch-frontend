@@ -1,21 +1,23 @@
-import React from 'react';
-import { useLocation, useParams } from 'react-router';
-import { Image, Card } from 'antd';
-import { Row, Col } from 'antd';
+import React, { useEffect, useState } from "react";
+import { useLocation, useParams } from "react-router";
+import { Image, Card, Collapse } from "antd";
+import { Row, Col } from "antd";
+import { crunchyGet } from "../util/api";
 
-import axios from 'axios';
-
-import '../styles/Show.css'
+import "../styles/Show.css"
 
 const { Meta } = Card;
+const { Panel } = Collapse;
 
 function Show(props) {
   let { provider, id } = useParams();
-  let location = useLocation();
-  let crunchySessionID;
-  let show;
 
-  console.log(props);
+  const [crunchySessionID, setCrunchySessionID] = useState("");
+  const [show, setShow] = useState({});
+  const [seasons, setSeasons] = useState({});
+  const [episodes, setEpisodes] = useState({});
+
+  // console.log(props);
 
   // check if props.meta exists
   // if yes use info to display poster + episode list
@@ -25,32 +27,32 @@ function Show(props) {
 
   // download list of show names + ids into dictionary to allow direct show access
 
-  if (location.state !== undefined) {
-    crunchySessionID = location.state.crunchySessionID;
-    show = location.state.show;
-    console.log(`crunchySessionID:`);
-    console.log(crunchySessionID);
-    console.log(`show:`);
-    console.log(show);
-    // axios
-    //   .get(`https://api.crunchyroll.com/list_collections.0.json`, {params: {series_id: meta.show.meta, session_id: crunchySessionID, filter}})
-    //   .then((response) => {
-    //     setCrunchyOptions(
-    //       searchText ? (response.data.data ? response.data.data.map((value) => {
-    //         return {id: value.series_id, title: value.name, provider: 'Crunchyroll', meta: value};
-    //       }) : []) : []
-    //     );
-    //   });
-  } else {
-    console.log('no meta')
-    return (
-      <div>
-        no meta
-      </div>
-    );
-  }
+  useEffect(() => {
+    setCrunchySessionID(props.location.state.crunchySessionID);
+  }, [props.location.state.crunchySessionID]);
 
+  useEffect(() => {
+    setShow(props.location.state.show);
+  }, [props.location.state.show]);
+
+  useEffect(() => {
+    if (!(show && Object.keys(show).length === 0 && show.constructor === Object)) {
+      crunchyGet(`list_collections`, {params: {series_id: show.meta.series_id, session_id: crunchySessionID}})
+        .then((response) => {
+          setSeasons(response.data.data);
+        });
+    }
+  }, [crunchySessionID, show]);
+
+  console.log(`crunchySessionID:`);
+  console.log(crunchySessionID);
+  console.log(`show:`);
+  console.log(show);
+  console.log("Seasons:");
+  console.log(seasons);
+  
   return (
+    !(seasons && Object.keys(seasons).length === 0 && seasons.constructor === Object) ? 
     <div className="show">
       <div className="show-title">{show.title}</div>
       <div className="show-data">
@@ -60,47 +62,56 @@ function Show(props) {
             src={show.meta.portrait_image.full_url} />
         </div>
         <div className="episode-list">
-          <Row gutter={[16, 16]}>
-            <Col span={6}>
-              <Card
-                hoverable
-                style={{ width: 240 }}
-                cover={<img alt="test" src={show.meta.portrait_image.full_url} />}
-              >
-                <Meta title="Test" description="Episode 1"/>
-              </Card>
-            </Col>
-            <Col span={6}>
-              <Card
-                hoverable
-                style={{ width: 240 }}
-                cover={<img src={show.meta.portrait_image.full_url} />}
-              >
-                <Meta title="Test" description="Episode 1"/>
-              </Card>
-            </Col>
-            <Col span={6}>
-              <Card
-                hoverable
-                style={{ width: 240 }}
-                cover={<img src={show.meta.portrait_image.full_url} />}
-              >
-                <Meta title="Test" description="Episode 1"/>
-              </Card>
-            </Col>
-            <Col span={6}>
-              <Card
-                hoverable
-                style={{ width: 240 }}
-                cover={<img src={show.meta.portrait_image.full_url} />}
-              >
-                <Meta title="Test" description="Episode 1"/>
-              </Card>
-            </Col>
-          </Row>
+          <Collapse defaultActiveKey={[1, 2]}>
+            <Panel header="test" key={1}>
+              <Row gutter={[16, 16]}>
+                <Col span={6}>
+                  <Card
+                    hoverable
+                    style={{ width: 240 }}
+                    cover={<img alt="test" src={show.meta.portrait_image.full_url} />}
+                  >
+                    <Meta title="Test" description="Episode 1"/>
+                  </Card>
+                </Col>
+                <Col span={6}>
+                  <Card
+                    hoverable
+                    style={{ width: 240 }}
+                    cover={<img src={show.meta.portrait_image.full_url} />}
+                  >
+                    <Meta title="Test" description="Episode 1"/>
+                  </Card>
+                </Col>
+                <Col span={6}>
+                  <Card
+                    hoverable
+                    style={{ width: 240 }}
+                    cover={<img src={show.meta.portrait_image.full_url} />}
+                  >
+                    <Meta title="Test" description="Episode 1"/>
+                  </Card>
+                </Col>
+                <Col span={6}>
+                  <Card
+                    hoverable
+                    style={{ width: 240 }}
+                    cover={<img src={show.meta.portrait_image.full_url} />}
+                  >
+                    <Meta title="Test" description="Episode 1"/>
+                  </Card>
+                </Col>
+              </Row>
+            </Panel>
+            <Panel header="test" key={2}>
+              text
+            </Panel>
+          </Collapse>
+          
         </div>
       </div>
     </div>
+    : <p>bad</p>
   );
 }
 

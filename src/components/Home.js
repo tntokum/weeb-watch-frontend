@@ -1,21 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { AutoComplete } from "antd";
-import { Redirect } from 'react-router-dom';
+import { useLocation } from "react-router";
+import { Redirect } from "react-router-dom";
 
-import axios from 'axios';
-
-import '../styles/Home.css'
-import { get } from '../util/api'
+import "../styles/Home.css"
+import { crunchyGet, funiGet } from "../util/api"
 
 const { Option } = AutoComplete;
 
 function Home(props) {
-  // anime streaming site
-  const funiApiHost = 'https://prod-api-funimationnow.dadcdigital.com/api/';
-  const crunchyApiHost = 'https://api.crunchyroll.com/';
-  
   // autocomplete state
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const [crunchyOptions, setCrunchyOptions] = useState([]);
   const [funiOptions, setFuniOptions] = useState([]);
   const [shows, setShows] = useState([]);
@@ -24,7 +19,7 @@ function Home(props) {
   const [navigation, setNavigation] = useState({});
 
   const onSearch = (search) => {
-    // console.log('onSearch', searchText);
+    // console.log("onSearch", searchText);
     setSearchText(search);
   };
 
@@ -36,23 +31,25 @@ function Home(props) {
         let filter = `prefix:${searchText.trim()}`;
         let funiParams = {unique: true, limit: 3, q: searchText, offset: 0 };
         
-        get(funiApiHost, "source/funimation/search/auto", {params: funiParams})
+        funiGet("source/funimation/search/auto", {params: funiParams})
           .then((response) => {
             setFuniOptions(
               searchText ? (response.data.items ? response.data.items.hits.map((value) => {
-                return {id: value.id, title: value.title, provider: 'Funimation', meta: value};
+                return {id: value.id, title: value.title, provider: "Funimation", meta: value};
               }) : []) : []
             );
           });
 
-        get(crunchyApiHost, "list_series.0.json", {params: {media_type: 'anime', session_id: props.crunchySessionID, filter}})
+        crunchyGet("list_series", {params: {media_type: "anime", session_id: props.crunchySessionID, filter}})
           .then((response) => {
             setCrunchyOptions(
               searchText ? (response.data.data ? response.data.data.map((value) => {
-                return {id: value.series_id, title: value.name, provider: 'Crunchyroll', meta: value};
+                return {id: value.series_id, title: value.name, provider: "Crunchyroll", meta: value};
               }) : []) : []
             );
           });
+        
+        // resolve both Promises somewhere here
       }, 250);
 
       return () => clearTimeout(waitFinishedTyping);
@@ -74,13 +71,11 @@ function Home(props) {
   };
 
   if (!(navigation && Object.keys(navigation).length === 0 && navigation.constructor === Object)) {
-    console.log("navigation:");
-    console.log(navigation);
     return (
       <Redirect
         push
         to={{
-          pathname: `/show/${navigation.show.provider.toLowerCase()}/${navigation.show.title.replace(/[^A-Za-z0-9\s]/gi, '').replace(/\s/gi, '-').toLowerCase()}`,
+          pathname: `/show/${navigation.show.provider.toLowerCase()}/${navigation.show.title.replace(/[^A-Za-z0-9\s]/gi, "").replace(/\s/gi, "-").toLowerCase()}`,
           state: {
             show: navigation.show,
             crunchySessionID: props.crunchySessionID
