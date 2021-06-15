@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { AutoComplete, Button, Tooltip } from "antd";
-import { SearchOutlined } from '@ant-design/icons';
+import { AutoComplete } from "antd";
 import { Redirect } from 'react-router-dom';
 
 import axios from 'axios';
 
 import '../styles/Home.css'
+import { get } from '../util/api'
 
 const { Option } = AutoComplete;
 
@@ -31,32 +31,33 @@ function Home(props) {
   // TODO: move API call into App.js
   // query crunchyroll/funimation when search value changes
   useEffect(() => {
-    const waitFinishedTyping = setTimeout(() => {
-      let filter = `prefix:${searchText.trim()}`;
-      let funiParams = {unique: true, limit: 3, q: searchText, offset: 0 };
-      
-      axios
-        .get(`${funiApiHost}source/funimation/search/auto`, {params: funiParams})
-        .then((response) => {
-          setFuniOptions(
-            searchText ? (response.data.items ? response.data.items.hits.map((value) => {
-              return {id: value.id, title: value.title, provider: 'Funimation', meta: value};
-            }) : []) : []
-          );
-        });
+    if (props.crunchySessionID !== "" && searchText !== "") {
+      const waitFinishedTyping = setTimeout(() => {
+        let filter = `prefix:${searchText.trim()}`;
+        let funiParams = {unique: true, limit: 3, q: searchText, offset: 0 };
+        
+        get(funiApiHost, "source/funimation/search/auto", {params: funiParams})
+          .then((response) => {
+            setFuniOptions(
+              searchText ? (response.data.items ? response.data.items.hits.map((value) => {
+                return {id: value.id, title: value.title, provider: 'Funimation', meta: value};
+              }) : []) : []
+            );
+          });
 
-      axios
-        .get(`${crunchyApiHost}list_series.0.json`, {params: {media_type: 'anime', session_id: props.crunchySessionID, filter}})
-        .then((response) => {
-          setCrunchyOptions(
-            searchText ? (response.data.data ? response.data.data.map((value) => {
-              return {id: value.series_id, title: value.name, provider: 'Crunchyroll', meta: value};
-            }) : []) : []
-          );
-        });
-    }, 250);
+        get(crunchyApiHost, "list_series.0.json", {params: {media_type: 'anime', session_id: props.crunchySessionID, filter}})
+          .then((response) => {
+            setCrunchyOptions(
+              searchText ? (response.data.data ? response.data.data.map((value) => {
+                return {id: value.series_id, title: value.name, provider: 'Crunchyroll', meta: value};
+              }) : []) : []
+            );
+          });
+      }, 250);
 
-    return () => clearTimeout(waitFinishedTyping);
+      return () => clearTimeout(waitFinishedTyping);
+    }
+
   }, [searchText, props.crunchySessionID]);
 
   // update options list when crunchyOptions or funiOptions changes
@@ -73,6 +74,7 @@ function Home(props) {
   };
 
   if (!(navigation && Object.keys(navigation).length === 0 && navigation.constructor === Object)) {
+    console.log("navigation:");
     console.log(navigation);
     return (
       <Redirect
@@ -101,7 +103,7 @@ function Home(props) {
             placeholder="Search for shows">
             {shows.map((show) => (
               <Option key={`${show.id}`} value={`${show.id}`} show={show}>
-                {show.title}
+                [{show.provider[0]}] {show.title}
               </Option>
             ))}
           </AutoComplete>

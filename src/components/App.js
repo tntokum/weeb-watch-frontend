@@ -8,6 +8,7 @@ import * as uuid from 'uuid';
 import Home from '../components/Home';
 import Show from '../components/Show';
 import Play from '../components/Play';
+import { get } from '../util/api'
 
 import '../styles/App.css';
 
@@ -19,16 +20,12 @@ function App() {
   // get crunchyroll session ID once per page refresh
   useEffect(() => {
     const fetchCrunchyID = async () => {
-      await axios
-        .get(`${crunchyApiHost}start_session.0.json`, {params: {access_token: "WveH9VkPLrXvuNm", device_type: "com.crunchyroll.crunchyroid", device_id: uuid.v4()}})
+      await get(crunchyApiHost, 'start_session.0.json', {params: {access_token: "WveH9VkPLrXvuNm", device_type: "com.crunchyroll.crunchyroid", device_id: uuid.v4()}})
         .then((r) => setCrunchySessionID(r.data.data.session_id));
     };
     
     fetchCrunchyID();
   }, []);
-  // const queryCrunchyroll = (path) => {
-  //   // axios.get(`${crunchyApiHost}list_series.0.json`, {params: {media_type: 'anime', session_id: crunchySessionID, filter}})
-  // };
 
   return (
     <Layout>

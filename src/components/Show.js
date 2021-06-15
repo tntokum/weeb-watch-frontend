@@ -17,19 +17,13 @@ function Show(props) {
 
   console.log(props);
 
-  // if (location.state !== undefined) {
-  //   console.log(`location:`);
-  //   console.log(location);
-  //   let { showMeta } = location.state;
-  //   console.log(`showMeta:`);
-  //   console.log(showMeta);
-  // }
-
   // check if props.meta exists
   // if yes use info to display poster + episode list
   // if no run fire axios callback in parent
 
   // also need to check crunchyroll vs. funimation for meta paths
+
+  // download list of show names + ids into dictionary to allow direct show access
 
   if (location.state !== undefined) {
     crunchySessionID = location.state.crunchySessionID;
@@ -57,9 +51,9 @@ function Show(props) {
   }
 
   return (
-    <>
+    <div className="show">
       <div className="show-title">{show.title}</div>
-      <div className="show">
+      <div className="show-data">
         <div className="portrait-meta">
           <Image 
             width={350}
@@ -106,7 +100,7 @@ function Show(props) {
           </Row>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
