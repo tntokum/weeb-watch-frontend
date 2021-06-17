@@ -15,7 +15,8 @@ function Show(props) {
   const [crunchySessionID, setCrunchySessionID] = useState("");
   const [show, setShow] = useState({});
   // set to false later
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSeasons, setIsLoadingSeasons] = useState(true);
+  const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(true);
 
   // console.log(props);
 
@@ -42,25 +43,29 @@ function Show(props) {
 
   useEffect(() => {
     if (crunchySessionID !== "" && show && show.id !== undefined) {
-      setIsLoading(true);
+      setIsLoadingSeasons(true);
       crunchyGet("list_collections", {params: {series_id: show.id, session_id: crunchySessionID}})
         .then(seasonsResponse => {
             const handleSeasons = async () => {
               let seasonsList = seasonsResponse.data.data;
-              let episodesList = [];
+              let episodesList = {};
               await Promise.all(seasonsList.map(async (season) => {
-                await pushEpisodes(season, episodesList);
+                const episodesResponseData = await crunchyGet("list_media", {params: {limit: 9999, collection_id: season.collection_id, session_id: crunchySessionID}})
+                  .then(response => response.data.data.reverse());
+                episodesList[season.collection_id] = episodesResponseData.filter((_, idx) => idx % 4 === 0).map((_, idx) => (episodesResponseData.slice(idx * 4, idx * 4 + 4)));
               }));
 
-              seasonsList = seasonsList.map((season, idx) => {
-                return {...season, episodes: episodesList[idx]}
+              seasonsList = seasonsList.map((season) => {
+                return {...season, episodes: episodesList[season.collection_id]}
               });
     
-              console.log("seasonsList");
-              console.log(seasonsList);
+              // console.log("episodesList");
+              // console.log(episodesList);
+              // console.log("seasonsList");
+              // console.log(seasonsList);
 
               setShow((s) => ({...s, seasons: seasonsList}));
-              setIsLoading(false);
+              setIsLoadingSeasons(false);
             };
             
             handleSeasons();
@@ -81,10 +86,11 @@ function Show(props) {
   // console.log("isLoading:");
   // console.log(isLoading);
 
-  const width = 200;
+  
+  const width = 250;
 
   return (
-    show && Object.keys(show).length !== 0 && show.constructor === Object ? !isLoading ?
+    show && Object.keys(show).length !== 0 && show.constructor === Object ? !isLoadingSeasons ?
     <div className="show">
       <div className="show-title">{show.title}</div>
       <div className="show-data">
@@ -95,51 +101,23 @@ function Show(props) {
         </div>
         <div className="episode-list">
           <Collapse defaultActiveKey={[...Array(show.seasons.length).keys()]}>
-            {show.seasons.map((season, idx) => (
-              <Panel header={season.name} key={idx}>
-                {season.episodes.filter((_, idx) => idx % 4 == 0).map((_, idx) => {
-                  idx *= 4;
-                  return (
-                    <Row gutter={[16, 16]}>
-                      <Col span={6}>
-                        <Card
-                          hoverable
-                          style={{ width: width }}
-                          cover={<img alt="test" src={season.episodes[idx].screenshot_image.fwide_url} />}
-                        >
-                          <Meta title={`Episode ${season.episodes[idx].episode_number}`} description={season.episodes[idx].name}/>
-                        </Card>
-                      </Col>
-                      <Col span={6}>
-                        <Card
-                          hoverable
-                          style={{ width: width }}
-                          cover={<img src={season.episodes[idx + 1].screenshot_image.fwide_url} />}
-                        >
-                          <Meta title={`Episode ${season.episodes[idx + 1].episode_number}`} description={season.episodes[idx + 1].name}/>
-                        </Card>
-                      </Col>
-                      <Col span={6}>
-                        <Card
-                          hoverable
-                          style={{ width: width }}
-                          cover={<img src={season.episodes[idx + 2].screenshot_image.fwide_url} />}
-                        >
-                          <Meta title={`Episode ${season.episodes[idx + 2].episode_number}`} description={season.episodes[idx + 2].name}/>
-                        </Card>
-                      </Col>
-                      <Col span={6}>
-                        <Card
-                          hoverable
-                          style={{ width: width }}
-                          cover={<img src={season.episodes[idx + 3].screenshot_image.fwide_url} />}
-                        >
-                          <Meta title={`Episode ${season.episodes[idx + 3].episode_number}`} description={season.episodes[idx + 3].name}/>
-                        </Card>
-                      </Col>
-                    </Row>
-                  );
-                })}
+            {show.seasons.map((season, sidx) => (
+              <Panel header={season.name} key={sidx}>
+                <Row gutter={[16, 32]}>
+                {season.episodes.map((episodeGroup) => (
+                    episodeGroup.map((episode) => (
+                        <Col span={6}>
+                          <Card
+                            hoverable
+                            style={{ width: width }}
+                            cover={<img alt="test" src={episode.screenshot_image.fwide_url} />}
+                          >
+                            <Meta title={`Episode ${episode.episode_number}`} description={episode.name}/>
+                          </Card>
+                        </Col>
+                    ))
+                ))}
+                </Row>
               </Panel>
             ))}
           </Collapse>
