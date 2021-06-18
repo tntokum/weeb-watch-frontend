@@ -3,10 +3,10 @@
     flex-direction: column;
     align-items: center;
     align-content: center;
-    padding: 6rem;
+    padding: 12rem 0rem;
 }
 
 .home-logo {
     font-size: 7rem;
-    margin: 1rem;
+    margin: .5rem;
 }

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router";
-import { Image, Card, Collapse } from "antd";
-import { Row, Col } from "antd";
+import { useParams } from "react-router";
+import { Image, Card, Collapse, Row, Col, Spin } from "antd";
+import { LoadingOutlined } from '@ant-design/icons';
 import { crunchyGet } from "../util/api";
 
 import "../styles/Show.css"
 
 const { Meta } = Card;
 const { Panel } = Collapse;
+
+const loadingIcon = <LoadingOutlined style={{ fontSize: 130 }} />;
 
 function Show(props) {
   let { provider, id } = useParams();
@@ -86,11 +88,11 @@ function Show(props) {
   // console.log("isLoading:");
   // console.log(isLoading);
 
-  
+
   const width = 250;
 
   return (
-    show && Object.keys(show).length !== 0 && show.constructor === Object ? !isLoadingSeasons ?
+    show && Object.keys(show).length !== 0 && show.constructor === Object && !isLoadingSeasons ?
     <div className="show">
       <div className="show-title">{show.title}</div>
       <div className="show-data">
@@ -121,11 +123,13 @@ function Show(props) {
               </Panel>
             ))}
           </Collapse>
-          
         </div>
       </div>
     </div>
-    : <p>loading season/episode data</p> : <p>waiting for axios calls</p>
+    : 
+    <div className="loading-box">
+      <Spin className="loading" indicator={loadingIcon} />
+    </div>
   );
 }
 

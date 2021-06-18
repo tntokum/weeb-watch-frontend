@@ -28,3 +28,20 @@
 .ant-card.ant-card-bordered.ant-card-hoverable {
     margin: 0 auto;
 }
+
+/* .show {
+    display: flex;
+    flex-direction: column;
+} */
+
+.loading {
+    width: 100%;
+}
+
+.loading-box{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    height: 100%;
+}

@@ -21,9 +21,9 @@
   /* padding: 3rem; */
 }
 
-.spacer {
+/* .spacer {
   flex-grow: 1;
-}
+} */
 
 .ant-layout-header, .ant-layout-content, .ant-layout-footer, .spacer {
   flex-shrink: 0;
