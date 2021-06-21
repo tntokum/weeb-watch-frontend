@@ -1,7 +1,7 @@
 import React from "react";
 
 import "../styles/Home.css";
-import OmniSearch from "./OmniSearch";
+import OmniSearch from "../components/OmniSearch";
 
 export default function Home(props) {
   return (

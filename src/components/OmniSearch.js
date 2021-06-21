@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { AutoComplete } from 'antd';
 import { crunchyGet, funiGet } from '../util/api';
 
@@ -18,11 +17,15 @@ export default function OmniSearch(props) {
         let filter = `prefix:${searchText.trim()}`;
         let funiParams = {unique: true, limit: 3, q: searchText, offset: 0 };
         
+        // use unified Object scheme later
         funiGet('source/funimation/search/auto', {params: funiParams})
           .then((response) => {
             setFuniOptions(
               searchText ? (response.data.items ? response.data.items.hits.map((value) => {
-                return {id: value.id, title: value.title, provider: 'Funimation', meta: value};
+                return {...value, 
+                  provider: 'funimation', 
+                  slug: value.slug
+                };
               }) : []) : []
             );
           });
@@ -31,7 +34,11 @@ export default function OmniSearch(props) {
           .then((response) => {
             setCrunchyOptions(
               searchText ? (response.data.data ? response.data.data.map((value) => {
-                return {id: value.series_id, title: value.name, provider: 'Crunchyroll', meta: value};
+                return {...value, 
+                  title: value.name, 
+                  provider: 'crunchyroll', 
+                  slug: value.url.substr(value.url.lastIndexOf('/') + 1)
+                };
               }) : []) : []
             );
           });
@@ -47,7 +54,7 @@ export default function OmniSearch(props) {
   // update options list when crunchyOptions or funiOptions changes
   useEffect(() => {
     const combined = crunchyOptions.concat(funiOptions);
-    // console.log(combined);
+    console.log(combined);
     setShows(combined);
   }, [crunchyOptions, funiOptions]);
 
@@ -68,8 +75,12 @@ export default function OmniSearch(props) {
       onSearch={onSearch}
       placeholder="Search for shows">
       {shows.map((show) => (
+        show.provider === 'crunchyroll' ? 
+        <Option key={`${show.series_id}`} value={`${show.series_id}`} show={show}>
+          [{show.provider[0].toUpperCase()}] {show.name}
+        </Option> :
         <Option key={`${show.id}`} value={`${show.id}`} show={show}>
-          [{show.provider[0]}] {show.title}
+          [{show.provider[0].toUpperCase()}] {show.title}
         </Option>
       ))}
     </AutoComplete>

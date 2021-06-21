@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Switch, Route, Redirect, useHistory } from 'react-router-dom';
+import { Link, Switch, Route, useHistory } from 'react-router-dom';
 import { Layout, Menu } from 'antd';
 
-import Home from '../components/Home';
-import Show from '../components/Show';
-import Play from '../components/Play';
-import OmniSearch from './OmniSearch';
+import Home from './Home';
+import Show from './Show';
+import Play from './Play';
+import OmniSearch from '../components/OmniSearch';
 import { crunchyGet } from '../util/api';
 
 import * as uuid from 'uuid';
@@ -14,10 +14,10 @@ import '../styles/App.css';
 
 const { Header, Content, Footer } = Layout;
 
-export default function App(props) {
+export default function App() {
   // navigation
   const [navigation, setNavigation] = useState({});
-  let history = useHistory();
+  const history = useHistory();
 
   // crunchyroll session id
   const [crunchySessionID, setCrunchySessionID] = useState('');
@@ -32,31 +32,22 @@ export default function App(props) {
     getCrunchySessionID();
   }, []);
 
-  // useEffect(() => {
-  //   console.log("navigation");
-  //   console.log(navigation);
-  // }, [navigation]);
-
   const navigate = (show) => {
     setNavigation(show);
-    history.push(`/show/${show.provider.toLowerCase()}/${show.title.replace(/[^A-Za-z0-9\s]/gi, "").replace(/\s/gi, "-").toLowerCase()}`);
+    // console.log(show);
+    history.push(`/show/${show.provider}/${show.slug}`);
   };
-
-  // console.log("App props");
-  // console.log(props);
 
   return (
     <Layout>
       <Header>
-        {/* <Link to="/">Home</Link> */}
-        {/* <Menu theme="dark" mode="horizontal">
-          <Link to="/">Home</Link>
-        </Menu> */}
-        {/* <OmniSearch
-          crunchySessionID={crunchySessionID}
-          setNavigation={setNavigation} /> */}
+        <Menu theme="dark" mode="horizontal" defaultSelectedKeys={"home"}>
+          <Menu.Item key={"home"}><Link to="/">Home</Link></Menu.Item>
+          <Menu.Item key={"about"}><Link to="/about">About</Link></Menu.Item>
+        </Menu>
         <OmniSearch
-          crunchySessionID={crunchySessionID} setNavigation={navigate} />
+            crunchySessionID={crunchySessionID} 
+            setNavigation={navigate} />
       </Header>
       <Content>
         <Switch>

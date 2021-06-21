@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { Tooltip, Image, Card, Collapse, Row, Col, Spin } from "antd";
+import { Tooltip, Image, Card, Collapse, Row, Col, Spin, Typography } from "antd";
 import { LoadingOutlined } from '@ant-design/icons';
 import { crunchyGet } from "../util/api";
 
@@ -8,6 +8,7 @@ import "../styles/Show.css"
 
 const { Meta } = Card;
 const { Panel } = Collapse;
+const { Title, Paragraph, Text, Link } = Typography;
 
 const loadingIcon = <LoadingOutlined style={{ fontSize: 130 }} />;
 
@@ -34,9 +35,9 @@ export default function Show(props) {
   useEffect(() => {
     if (provider === 'crunchyroll') {
       if (props.crunchySessionID && props.crunchySessionID !== '') {
-        if (props.show && 'id' in props.show) {
+        if (props.show && 'series_id' in props.show) {
           // setIsLoadingSeasons(true);
-          crunchyGet('list_collections', {params: {series_id: props.show.id, session_id: props.crunchySessionID}})
+          crunchyGet('list_collections', {params: {series_id: props.show.series_id, session_id: props.crunchySessionID}})
             .then(seasonsResponse => {
                 const handleSeasons = async () => {
                   let seasonsList = seasonsResponse.data.data;
@@ -51,9 +52,6 @@ export default function Show(props) {
                     return {...season, episodes: episodesList[season.collection_id]}
                   });
 
-                  console.log("seasonsList");
-                  console.log(seasonsList);
-
                   setShow((s) => ({...s, seasons: seasonsList}));
                   setIsLoadingSeasons(false);
                 };
@@ -67,19 +65,35 @@ export default function Show(props) {
         props.getCrunchySessionID();
       }
     }
+    
+    else if (provider === 'funimation') {
+
+    }
   }, [props, provider]);
+
+  console.log("show");
+  console.log(show);
 
   const width = 250;
 
   return (
     show && Object.keys(show).length !== 0 && show.constructor === Object && show.seasons && !isLoadingSeasons ?
     <div className="show">
-      <div className="show-title">{show.title}</div>
+      <div className="show-title">
+        <Title>
+          {show.name}
+        </Title>
+      </div>
       <div className="show-data">
         <div className="portrait-meta">
           <Image 
-            width={350}
-            src={show.meta.portrait_image.full_url} />
+            width={400}
+            src={show.portrait_image.full_url} />
+          <Typography>
+            <Paragraph>
+              {show.description}
+            </Paragraph>
+          </Typography>
         </div>
         <div className="episode-list">
           <Collapse defaultActiveKey={[...Array(show.seasons.length).keys()]}>
