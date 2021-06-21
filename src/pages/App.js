@@ -35,7 +35,11 @@ export default function App() {
   const navigate = (show) => {
     setNavigation(show);
     // console.log(show);
-    history.push(`/show/${show.provider}/${show.slug}`);
+    if (show.provider === "crunchyroll") {
+      history.push(`/show/${show.provider}/${show.class}/${show.series_id}/${show.slug}`);
+    } else {
+      history.push(`/show/${show.provider}/${show.id}/${show.slug}`);
+    }
   };
 
   return (
@@ -52,7 +56,8 @@ export default function App() {
       <Content>
         <Switch>
           <Route exact path="/"><Home crunchySessionID={crunchySessionID} setNavigation={navigate} /></Route>
-          <Route exact path="/show/:provider/:title"><Show crunchySessionID={crunchySessionID} show={navigation} getCrunchySessionID={getCrunchySessionID}/></Route>
+          <Route exact path="/show/:provider/:class/:id/:title"><Show crunchySessionID={crunchySessionID} show={navigation} getCrunchySessionID={getCrunchySessionID}/></Route>
+          <Route exact path="/show/:provider/:id/:title"><Show crunchySessionID={crunchySessionID} show={navigation} getCrunchySessionID={getCrunchySessionID}/></Route>
           <Route exact path="/play"><Play /></Route>
         </Switch>
       </Content>

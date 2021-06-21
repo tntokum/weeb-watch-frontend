@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import { useParams } from "react-router";
 import { Tooltip, Image, Card, Collapse, Row, Col, Spin, Typography } from "antd";
 import { LoadingOutlined } from '@ant-design/icons';
@@ -13,7 +14,7 @@ const { Title, Paragraph, Text, Link } = Typography;
 const loadingIcon = <LoadingOutlined style={{ fontSize: 130 }} />;
 
 export default function Show(props) {
-  let { provider, title } = useParams();
+  let { provider, cls, id, title } = useParams();
 
   const [show, setShow] = useState({});
   // set to false later
@@ -71,60 +72,67 @@ export default function Show(props) {
     }
   }, [props, provider]);
 
-  console.log("show");
-  console.log(show);
+  // console.log("show");
+  // console.log(show);
 
   const width = 250;
 
   return (
-    show && Object.keys(show).length !== 0 && show.constructor === Object && show.seasons && !isLoadingSeasons ?
-    <div className="show">
-      <div className="show-title">
-        <Title>
-          {show.name}
-        </Title>
-      </div>
-      <div className="show-data">
-        <div className="portrait-meta">
-          <Image 
-            width={400}
-            src={show.portrait_image.full_url} />
-          <Typography>
-            <Paragraph>
-              {show.description}
-            </Paragraph>
-          </Typography>
-        </div>
-        <div className="episode-list">
-          <Collapse defaultActiveKey={[...Array(show.seasons.length).keys()]}>
-            {show.seasons.map((season, sidx) => (
-              <Panel header={season.name} key={sidx}>
-                <Row gutter={[16, 32]} key={sidx}>
-                {season.episodes.map((episodeGroup, egidx) => (
-                    episodeGroup.map((episode, eidx) => (
-                      <Col span={6} key={egidx * 4 + eidx}>
-                        <Tooltip title={episode.description} color="gray">
-                          <Card
-                            hoverable
-                            style={{ width: width }}
-                            cover={<img alt="test" src={episode.screenshot_image.fwide_url} />}
-                          >
-                            <Meta title={`Episode ${episode.episode_number}`} description={episode.name}/>
-                          </Card>
-                        </Tooltip>
-                      </Col>
-                    ))
+    <>
+      <Helmet>
+        <title>{`${show.title} | WeebWatch`}</title>
+      </Helmet>
+      {
+        show && Object.keys(show).length !== 0 && show.constructor === Object && show.seasons && !isLoadingSeasons ?
+        <div className="show">
+          <div className="show-title">
+            <Title>
+              {show.title}
+            </Title>
+          </div>
+          <div className="show-data">
+            <div className="portrait-meta">
+              <Image 
+                width={400}
+                src={show.portrait_image.full_url} />
+              <Typography>
+                <Paragraph>
+                  {show.description}
+                </Paragraph>
+              </Typography>
+            </div>
+            <div className="episode-list">
+              <Collapse defaultActiveKey={[...Array(show.seasons.length).keys()]}>
+                {show.seasons.map((season, sidx) => (
+                  <Panel header={season.name} key={sidx}>
+                    <Row gutter={[16, 32]} key={sidx}>
+                    {season.episodes.map((episodeGroup, egidx) => (
+                        episodeGroup.map((episode, eidx) => (
+                          <Col span={6} key={egidx * 4 + eidx}>
+                            <Tooltip title={episode.description} color="gray">
+                              <Card
+                                hoverable
+                                style={{ width: width }}
+                                cover={<img alt="test" src={episode.screenshot_image.fwide_url} />}
+                              >
+                                <Meta title={`Episode ${episode.episode_number}`} description={episode.name}/>
+                              </Card>
+                            </Tooltip>
+                          </Col>
+                        ))
+                    ))}
+                    </Row>
+                  </Panel>
                 ))}
-                </Row>
-              </Panel>
-            ))}
-          </Collapse>
+              </Collapse>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-    : 
-    <div className="loading-box">
-      <Spin className="loading" indicator={loadingIcon} />
-    </div>
+        : 
+        <div className="loading-box">
+          <Spin className="loading" indicator={loadingIcon} />
+        </div>
+      }
+    </>
   );
 };

@@ -77,10 +77,10 @@ export default function OmniSearch(props) {
       {shows.map((show) => (
         show.provider === 'crunchyroll' ? 
         <Option key={`${show.series_id}`} value={`${show.series_id}`} show={show}>
-          [{show.provider[0].toUpperCase()}] {show.name}
+          {`[${show.provider[0].toUpperCase()}] ${show.name}`}
         </Option> :
         <Option key={`${show.id}`} value={`${show.id}`} show={show}>
-          [{show.provider[0].toUpperCase()}] {show.title}
+          {`[${show.provider[0].toUpperCase()}] ${show.title}`}
         </Option>
       ))}
     </AutoComplete>
