@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { Image, Card, Collapse, Row, Col, Spin } from "antd";
+import { Tooltip, Image, Card, Collapse, Row, Col, Spin } from "antd";
 import { LoadingOutlined } from '@ant-design/icons';
 import { crunchyGet } from "../util/api";
 
@@ -11,16 +11,15 @@ const { Panel } = Collapse;
 
 const loadingIcon = <LoadingOutlined style={{ fontSize: 130 }} />;
 
-function Show(props) {
+export default function Show(props) {
   let { provider, id } = useParams();
 
-  const [crunchySessionID, setCrunchySessionID] = useState("");
+  // const [crunchySessionID, setCrunchySessionID] = useState("");
   const [show, setShow] = useState({});
   // set to false later
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(true);
-  const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(true);
 
-  // console.log(props);
+  console.log(props);
 
   // check if props.meta exists
   // if yes use info to display poster + episode list
@@ -30,29 +29,20 @@ function Show(props) {
 
   // download list of show names + ids into dictionary to allow direct show access
 
-  const pushEpisodes = async (season, episodesList) => {
-    const episodesResponse = await crunchyGet("list_media", {params: {limit: 9999, collection_id: season.collection_id, session_id: crunchySessionID}});
-    episodesList.push(episodesResponse.data.data);
-  };
+  useEffect(() => {
+    setShow(props.show);
+  }, [props.show]);
 
   useEffect(() => {
-    setCrunchySessionID(props.location.state.crunchySessionID);
-  }, [props.location.state.crunchySessionID]);
-
-  useEffect(() => {
-    setShow(props.location.state.show);
-  }, [props.location.state.show]);
-
-  useEffect(() => {
-    if (crunchySessionID !== "" && show && show.id !== undefined) {
-      setIsLoadingSeasons(true);
-      crunchyGet("list_collections", {params: {series_id: show.id, session_id: crunchySessionID}})
+    if (props.crunchySessionID && props.crunchySessionID !== "" && props.show.id !== undefined) {
+      // setIsLoadingSeasons(true);
+      crunchyGet("list_collections", {params: {series_id: props.show.id, session_id: props.crunchySessionID}})
         .then(seasonsResponse => {
             const handleSeasons = async () => {
               let seasonsList = seasonsResponse.data.data;
               let episodesList = {};
               await Promise.all(seasonsList.map(async (season) => {
-                const episodesResponseData = await crunchyGet("list_media", {params: {limit: 9999, collection_id: season.collection_id, session_id: crunchySessionID}})
+                const episodesResponseData = await crunchyGet("list_media", {params: {limit: 9999, collection_id: season.collection_id, session_id: props.crunchySessionID}})
                   .then(response => response.data.data.reverse());
                 episodesList[season.collection_id] = episodesResponseData.filter((_, idx) => idx % 4 === 0).map((_, idx) => (episodesResponseData.slice(idx * 4, idx * 4 + 4)));
               }));
@@ -60,11 +50,9 @@ function Show(props) {
               seasonsList = seasonsList.map((season) => {
                 return {...season, episodes: episodesList[season.collection_id]}
               });
-    
-              // console.log("episodesList");
-              // console.log(episodesList);
-              // console.log("seasonsList");
-              // console.log(seasonsList);
+
+              console.log("seasonsList");
+              console.log(Object.keys(seasonsList));
 
               setShow((s) => ({...s, seasons: seasonsList}));
               setIsLoadingSeasons(false);
@@ -73,7 +61,7 @@ function Show(props) {
             handleSeasons();
         });
     }
-  }, [crunchySessionID, show.id]);
+  }, [props.crunchySessionID, props.show.id]);
   
   // console.log(`crunchySessionID:`);
   // console.log(crunchySessionID);
@@ -85,14 +73,15 @@ function Show(props) {
   //   console.log(`episodes from season 1:`);
   //   console.log(show.seasons[0].episodes);
   // }
+  // console.log(`seasons:`);
+  // console.log(show.seasons);
   // console.log("isLoading:");
   // console.log(isLoading);
-
 
   const width = 250;
 
   return (
-    show && Object.keys(show).length !== 0 && show.constructor === Object && !isLoadingSeasons ?
+    show && Object.keys(show).length !== 0 && show.constructor === Object && show.seasons && !isLoadingSeasons ?
     <div className="show">
       <div className="show-title">{show.title}</div>
       <div className="show-data">
@@ -105,10 +94,11 @@ function Show(props) {
           <Collapse defaultActiveKey={[...Array(show.seasons.length).keys()]}>
             {show.seasons.map((season, sidx) => (
               <Panel header={season.name} key={sidx}>
-                <Row gutter={[16, 32]}>
-                {season.episodes.map((episodeGroup) => (
-                    episodeGroup.map((episode) => (
-                        <Col span={6}>
+                <Row gutter={[16, 32]} key={sidx}>
+                {season.episodes.map((episodeGroup, egidx) => (
+                    episodeGroup.map((episode, eidx) => (
+                      <Col span={6} key={egidx * 4 + eidx}>
+                        <Tooltip title={episode.description} color="gray">
                           <Card
                             hoverable
                             style={{ width: width }}
@@ -116,7 +106,8 @@ function Show(props) {
                           >
                             <Meta title={`Episode ${episode.episode_number}`} description={episode.name}/>
                           </Card>
-                        </Col>
+                        </Tooltip>
+                      </Col>
                     ))
                 ))}
                 </Row>
@@ -131,6 +122,4 @@ function Show(props) {
       <Spin className="loading" indicator={loadingIcon} />
     </div>
   );
-}
-
-export default Show;
+};
