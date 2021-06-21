@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Redirect } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import { AutoComplete } from 'antd';
 import { crunchyGet, funiGet } from '../util/api';
 
@@ -48,13 +48,11 @@ export default function OmniSearch(props) {
   useEffect(() => {
     const combined = crunchyOptions.concat(funiOptions);
     // console.log(combined);
-    setShows(
-      combined
-    );
+    setShows(combined);
   }, [crunchyOptions, funiOptions]);
 
   const onSelect = (_, option) => {
-    props.setNavigation(option);
+    props.setNavigation(option.show);
   };
 
   const onSearch = (search) => {

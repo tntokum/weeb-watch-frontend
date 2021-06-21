@@ -12,14 +12,11 @@ const { Panel } = Collapse;
 const loadingIcon = <LoadingOutlined style={{ fontSize: 130 }} />;
 
 export default function Show(props) {
-  let { provider, id } = useParams();
+  let { provider, title } = useParams();
 
-  // const [crunchySessionID, setCrunchySessionID] = useState("");
   const [show, setShow] = useState({});
   // set to false later
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(true);
-
-  console.log(props);
 
   // check if props.meta exists
   // if yes use info to display poster + episode list
@@ -33,50 +30,44 @@ export default function Show(props) {
     setShow(props.show);
   }, [props.show]);
 
+  // populate show with seasonsList
   useEffect(() => {
-    if (props.crunchySessionID && props.crunchySessionID !== "" && props.show.id !== undefined) {
-      // setIsLoadingSeasons(true);
-      crunchyGet("list_collections", {params: {series_id: props.show.id, session_id: props.crunchySessionID}})
-        .then(seasonsResponse => {
-            const handleSeasons = async () => {
-              let seasonsList = seasonsResponse.data.data;
-              let episodesList = {};
-              await Promise.all(seasonsList.map(async (season) => {
-                const episodesResponseData = await crunchyGet("list_media", {params: {limit: 9999, collection_id: season.collection_id, session_id: props.crunchySessionID}})
-                  .then(response => response.data.data.reverse());
-                episodesList[season.collection_id] = episodesResponseData.filter((_, idx) => idx % 4 === 0).map((_, idx) => (episodesResponseData.slice(idx * 4, idx * 4 + 4)));
-              }));
+    if (provider === 'crunchyroll') {
+      if (props.crunchySessionID && props.crunchySessionID !== '') {
+        if (props.show && 'id' in props.show) {
+          // setIsLoadingSeasons(true);
+          crunchyGet('list_collections', {params: {series_id: props.show.id, session_id: props.crunchySessionID}})
+            .then(seasonsResponse => {
+                const handleSeasons = async () => {
+                  let seasonsList = seasonsResponse.data.data;
+                  let episodesList = {};
+                  await Promise.all(seasonsList.map(async (season) => {
+                    const episodesResponseData = await crunchyGet('list_media', {params: {limit: 9999, collection_id: season.collection_id, session_id: props.crunchySessionID}})
+                      .then(response => response.data.data.reverse());
+                    episodesList[season.collection_id] = episodesResponseData.filter((_, idx) => idx % 4 === 0).map((_, idx) => (episodesResponseData.slice(idx * 4, idx * 4 + 4)));
+                  }));
 
-              seasonsList = seasonsList.map((season) => {
-                return {...season, episodes: episodesList[season.collection_id]}
-              });
+                  seasonsList = seasonsList.map((season) => {
+                    return {...season, episodes: episodesList[season.collection_id]}
+                  });
 
-              console.log("seasonsList");
-              console.log(Object.keys(seasonsList));
+                  console.log("seasonsList");
+                  console.log(seasonsList);
 
-              setShow((s) => ({...s, seasons: seasonsList}));
-              setIsLoadingSeasons(false);
-            };
-            
-            handleSeasons();
-        });
+                  setShow((s) => ({...s, seasons: seasonsList}));
+                  setIsLoadingSeasons(false);
+                };
+                
+                handleSeasons();
+            });
+        } else {
+          
+        }
+      } else {
+        props.getCrunchySessionID();
+      }
     }
-  }, [props.crunchySessionID, props.show.id]);
-  
-  // console.log(`crunchySessionID:`);
-  // console.log(crunchySessionID);
-  // if (show && show.seasons) {
-  //   console.log(`season 1:`);
-  //   console.log(show.seasons[0]);
-  //   console.log(`keys from season 1:`);
-  //   console.log(Object.keys(show.seasons[0]));
-  //   console.log(`episodes from season 1:`);
-  //   console.log(show.seasons[0].episodes);
-  // }
-  // console.log(`seasons:`);
-  // console.log(show.seasons);
-  // console.log("isLoading:");
-  // console.log(isLoading);
+  }, [props, provider]);
 
   const width = 250;
 
