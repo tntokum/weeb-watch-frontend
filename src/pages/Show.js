@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Helmet, HelmetProvider } from "react-helmet-async";
+import { Helmet } from "react-helmet-async";
 import { useParams } from "react-router";
-import { Tooltip, Image, Card, Collapse, Row, Col, Spin, Typography } from "antd";
+import { Tooltip, Image, Card, Collapse, Space, Spin, Typography, Divider, Select } from "antd";
 import { LoadingOutlined } from '@ant-design/icons';
 import { crunchyGet } from "../util/api";
 
@@ -10,6 +10,7 @@ import "../styles/Show.css"
 const { Meta } = Card;
 const { Panel } = Collapse;
 const { Title, Paragraph, Text, Link } = Typography;
+const { Option, OptGroup } = Select;
 
 const loadingIcon = <LoadingOutlined style={{ fontSize: 130 }} />;
 
@@ -17,6 +18,7 @@ export default function Show(props) {
   let { provider, cls, id, title } = useParams();
 
   const [show, setShow] = useState({});
+  const [seasonIdx, setSeasonIdx] = useState(0);
   // set to false later
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(true);
 
@@ -33,6 +35,7 @@ export default function Show(props) {
   }, [props.show]);
 
   // populate show with seasonsList
+  // only fetch data for 1 season at a time
   useEffect(() => {
     if (provider === 'crunchyroll') {
       if (props.crunchySessionID && props.crunchySessionID !== '') {
@@ -46,13 +49,17 @@ export default function Show(props) {
                   await Promise.all(seasonsList.map(async (season) => {
                     const episodesResponseData = await crunchyGet('list_media', {params: {limit: 9999, collection_id: season.collection_id, session_id: props.crunchySessionID}})
                       .then(response => response.data.data.reverse());
-                    episodesList[season.collection_id] = episodesResponseData.filter((_, idx) => idx % 4 === 0).map((_, idx) => (episodesResponseData.slice(idx * 4, idx * 4 + 4)));
+                    episodesList[season.collection_id] = episodesResponseData;
                   }));
 
                   seasonsList = seasonsList.map((season) => {
                     return {...season, episodes: episodesList[season.collection_id]}
                   });
 
+                  console.log("seasonsList");
+                  console.log(seasonsList);
+
+                  setSeasonIdx(0);
                   setShow((s) => ({...s, seasons: seasonsList}));
                   setIsLoadingSeasons(false);
                 };
@@ -75,7 +82,7 @@ export default function Show(props) {
   // console.log("show");
   // console.log(show);
 
-  const width = 250;
+  // const width = 280;
 
   return (
     <>
@@ -95,36 +102,50 @@ export default function Show(props) {
               <Image 
                 width={400}
                 src={show.portrait_image.full_url} />
+              <Divider />
               <Typography>
-                <Paragraph>
+                <Paragraph className="description">
                   {show.description}
                 </Paragraph>
               </Typography>
             </div>
-            <div className="episode-list">
-              <Collapse defaultActiveKey={[...Array(show.seasons.length).keys()]}>
-                {show.seasons.map((season, sidx) => (
-                  <Panel header={season.name} key={sidx}>
-                    <Row gutter={[16, 32]} key={sidx}>
-                    {season.episodes.map((episodeGroup, egidx) => (
-                        episodeGroup.map((episode, eidx) => (
-                          <Col span={6} key={egidx * 4 + eidx}>
-                            <Tooltip title={episode.description} color="gray">
-                              <Card
-                                hoverable
-                                style={{ width: width }}
-                                cover={<img alt="test" src={episode.screenshot_image.fwide_url} />}
-                              >
-                                <Meta title={`Episode ${episode.episode_number}`} description={episode.name}/>
-                              </Card>
-                            </Tooltip>
-                          </Col>
-                        ))
-                    ))}
-                    </Row>
-                  </Panel>
+            <div className="collection">
+              <div className="seasons-sorting">
+                <div className="seasons">
+                  {/* use rem instead of px for minwidth later */}
+                  <Select onSelect={index => setSeasonIdx(index)} className="seasons-select" dropdownClassName="seasons-dropdown" defaultValue={show.seasons[seasonIdx].name} bordered={false} dropdownMatchSelectWidth={200}>
+                    {show.seasons.map((season, idx) => 
+                      <Option key={idx} value={idx}>{season.name}</Option>
+                    )}
+                  </Select>
+                </div>
+                <div className="sorting">
+                  <Select className="sorting-select" dropdownClassName="sorting-dropdown" defaultValue="Oldest" bordered={false}>
+                    {/* additional sorting options? (most popular/highest rated episode) */}
+                    <Option key="Oldest" value="Oldest">
+                      Oldest
+                    </Option>
+                    <Option key="Newest" value="Newest">
+                      Newest
+                    </Option>
+                  </Select>
+                </div>
+              </div>
+              {/* replace with custom flexbox div */}
+              <div className="episodes">
+                {show.seasons[seasonIdx].episodes.map((episode) => (
+                  // <Tooltip title={episode.description} color="gray">
+                    <Card
+                      className="episode-card"
+                      hoverable
+                      style={{ backgroundColor: "transparent", borderColor: "gainsboro" }}
+                      cover={<img alt="test" src={episode.screenshot_image.fwide_url} />}
+                    >
+                      <Meta title={`Episode ${episode.episode_number}`} description={episode.name}/>
+                    </Card>
+                  // </Tooltip>
                 ))}
-              </Collapse>
+              </div>
             </div>
           </div>
         </div>
